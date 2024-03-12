@@ -15,8 +15,8 @@
 #define POT_1 A0          //SHOULDER POSITION CONTROL (BASE JOINT)
 #define POT_2 A1         //ELBOW POSITION CONTROL (MID JOINT)
 #define POT_3 A2        //WRIST POSITION CONTROL (END JOINT)
-#define LCD_SDA        //LCD I2C DATA PIN
-#define LCD_SCL       //LCD I2C CLK PIN
+#define LCD_SDA 20     //LCD I2C DATA PIN
+#define LCD_SCL 21    //LCD I2C CLK PIN
 
 
 int MIN_ANGLE=0,MAX_ANGLE=360, OLD_ANGLE_1, OLD_ANGLE_2, OLD_ANGLE_3,POS_1,POS_2,POS_3;
@@ -112,6 +112,14 @@ void setup() {
   pinMode(ENCODER_B_1,INPUT);
   pinMode(ENCODER_B_2,INPUT);
   pinMode(ENCODER_B_3,INPUT);
+  pinMode(LCD_SDA,OUTPUT);
+  pinMode(LCD_SCL,OUTPUT);
+  pinMode(MOTOR_1_FORWARD, OUTPUT);
+  pinMode(MOTOR_2_FORWARD, OUTPUT);
+  pinMode(MOTOR_3_FORWARD, OUTPUT);
+  pinMode(MOTOR_1_BACKWARD, OUTPUT);
+  pinMode(MOTOR_2_BACKWARD, OUTPUT);
+  pinMode(MOTOR_3_BACKWARD, OUTPUT);
   attachInterrupt(digitalPinToInterrupt(ENCODER_A_1),READ_ENCODER_1,CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENCODER_A_2),READ_ENCODER_2,CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENCODER_A_3),READ_ENCODER_3,CHANGE);
@@ -150,8 +158,6 @@ void loop() {
   delay(100); // Adjust delay as needed for display refresh rate
 
 }
-
-
 
 
 
