@@ -15,8 +15,11 @@
 #define POT_1 A0          //SHOULDER POSITION CONTROL (BASE JOINT)
 #define POT_2 A1         //ELBOW POSITION CONTROL (MID JOINT)
 #define POT_3 A2        //WRIST POSITION CONTROL (END JOINT)
+#define LCD_SDA        //LCD I2C DATA PIN
+#define LCD_SCL       //LCD I2C CLK PIN
 
-int MIN_ANGLE=0,MAX_ANGLE=360;
+
+int MIN_ANGLE=0,MAX_ANGLE=360, OLD_ANGLE_1, OLD_ANGLE_2, OLD_ANGLE_3,POS_1,POS_2,POS_3;
 LiquidCrystal_I2C LCD(0x27,16,2);
 byte HEART[8] ={
     0b00001010,
@@ -29,6 +32,51 @@ byte HEART[8] ={
     0b00000000
 }; //heart shape character
 
+void ADJUST_ANGLE_MOTOR_1(int ANGLE) {
+
+  int DIRECTION = (ANGLE > OLD_ANGLE_1) ? HIGH : LOW;
+
+  while (OLD_ANGLE_1 != ANGLE) {
+
+    digitalWrite(MOTOR_1_FORWARD, DIRECTION);
+    digitalWrite(MOTOR_1_BACKWARD,!DIRECTION);
+
+    OLD_ANGLE_1 += (DIRECTION == HIGH) ? 1 : -1;
+    delay(10);
+      }
+  digitalWrite(MOTOR_1_FORWARD, LOW);
+  digitalWrite(MOTOR_1_BACKWARD, LOW);
+}
+void ADJUST_ANGLE_MOTOR_2(int ANGLE) {
+
+  int DIRECTION = (ANGLE > OLD_ANGLE_2) ? HIGH : LOW;
+
+  while (OLD_ANGLE_2 != ANGLE) {
+
+    digitalWrite(MOTOR_2_FORWARD, DIRECTION);
+    digitalWrite(MOTOR_2_BACKWARD,!DIRECTION);
+
+    OLD_ANGLE_2 += (DIRECTION == HIGH) ? 1 : -1;
+    delay(10);
+  }
+  digitalWrite(MOTOR_2_FORWARD, LOW);
+  digitalWrite(MOTOR_2_BACKWARD, LOW);
+}
+void ADJUST_ANGLE_MOTOR_3(int ANGLE) {
+
+  int DIRECTION = (ANGLE > OLD_ANGLE_3) ? HIGH : LOW;
+
+  while (OLD_ANGLE_3 != ANGLE) {
+
+    digitalWrite(MOTOR_3_FORWARD, DIRECTION);
+    digitalWrite(MOTOR_3_BACKWARD,!DIRECTION);
+
+    OLD_ANGLE_3 += (DIRECTION == HIGH) ? 1 : -1;
+    delay(10);
+      }
+  digitalWrite(MOTOR_3_FORWARD, LOW);
+  digitalWrite(MOTOR_3_BACKWARD, LOW);
+}
 void READ_ENCODER_1(){
   int B = digitalRead(ENCODER_B_1);
   if(B > 0){
@@ -56,23 +104,6 @@ void READ_ENCODER_3(){
     POS_3--;
   }
 }
-/*
-void SET_MOTOR(int dir, int pwmVal, int pwm, int in1, int in2){
-  analogWrite(pwm,pwmVal);
-  if(DIRECTION == 1){
-    digitalWrite(in1,HIGH);
-    digitalWrite(in2,LOW);
-  }
-  else if(DIRECTION == -1){
-    digitalWrite(in1,LOW);
-    digitalWrite(in2,HIGH);
-  }
-  else{
-    digitalWrite(in1,LOW);
-    digitalWrite(in2,LOW);
-  }
-}
-*/
 void setup() {
   Serial.begin(9600);
   pinMode(ENCODER_A_1,INPUT);
@@ -81,9 +112,9 @@ void setup() {
   pinMode(ENCODER_B_1,INPUT);
   pinMode(ENCODER_B_2,INPUT);
   pinMode(ENCODER_B_3,INPUT);
-  attachInterrupt(digitalPinToInterrupt(ENCODER_A_1),READ_ENCODER_1(),CHANGE);
-  attachInterrupt(digitalPinToInterrupt(ENCODER_A_2),READ_ENCODER_2(),CHANGE);
-  attachInterrupt(digitalPinToInterrupt(ENCODER_A_3),READ_ENCODER_3(),CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_A_1),READ_ENCODER_1,CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_A_2),READ_ENCODER_2,CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_A_3),READ_ENCODER_3,CHANGE);
 }
 
 void loop() {
@@ -92,28 +123,33 @@ void loop() {
   int POT_3_VALUE=analogRead(POT_3);
   int ANGLE_MOTOR_1=map(POT_1_VALUE,0,1023,MIN_ANGLE,MAX_ANGLE);
   int ANGLE_MOTOR_2=map(POT_2_VALUE,0,1023,MIN_ANGLE,MAX_ANGLE);
-  int ANGLE_MOTOR_2=map(POT_3_VALUE,0,1023,MIN_ANGLE,MAX_ANGLE);
+  int ANGLE_MOTOR_3=map(POT_3_VALUE,0,1023,MIN_ANGLE,MAX_ANGLE);
 
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("1st ");
-  lcd.print(ANGLE_MOTOR_1);
-  lcd.print((char)223); // Degree symbol
-  lcd.setCursor(0, 1);
-  lcd.print("2nd");
-  lcd.print(ANGLE_MOTOR_2);
-  lcd.print((char)223); // Degree symbol
-  lcd.print("2nd");
-  lcd.print(ANGLE_MOTOR_3);
-  lcd.print((char)223); // Degree symbol
+  ADJUST_ANGLE_MOTOR_1(ANGLE_MOTOR_1);
+  ADJUST_ANGLE_MOTOR_2(ANGLE_MOTOR_2);
+  ADJUST_ANGLE_MOTOR_3(ANGLE_MOTOR_3);
+
+  OLD_ANGLE_1=ANGLE_MOTOR_1;
+  OLD_ANGLE_2=ANGLE_MOTOR_2;
+  OLD_ANGLE_3=ANGLE_MOTOR_3;
+
+
+  LCD.clear();
+  LCD.setCursor(0, 0);
+  LCD.print("1st ");
+  LCD.print(ANGLE_MOTOR_1);
+  LCD.print((char)223); // Degree symbol
+  LCD.setCursor(0, 1);
+  LCD.print("2nd");
+  LCD.print(ANGLE_MOTOR_2);
+  LCD.print((char)223); // Degree symbol
+  LCD.print("2nd");
+  LCD.print(ANGLE_MOTOR_3);
+  LCD.print((char)223); // Degree symbol
 
   delay(100); // Adjust delay as needed for display refresh rate
 
 }
-
-
-
-
 
 
 
