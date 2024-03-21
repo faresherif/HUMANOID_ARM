@@ -1,3 +1,4 @@
+//Interfacing 3 Encoded DcMotors With Potentiometer for Position Control Manually With angle Displaying on LCD+i2c "WITHOUT PID"
 /***********************************************************************************/
 /*********************************Arduino MEGA 26560********************************/
 /*************************************Ver:01***************************************/
