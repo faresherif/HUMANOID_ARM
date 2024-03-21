@@ -27,16 +27,6 @@
 
 int MIN_ANGLE=0,MAX_ANGLE=360, OLD_ANGLE_1, OLD_ANGLE_2, OLD_ANGLE_3,POS_1,POS_2,POS_3;
 LiquidCrystal_I2C LCD(0x27,16,2);
-byte HEART[8] ={
-    0b00001010,
-    0b00010101,
-    0b00010001,
-    0b00001010,
-    0b00000100,
-    0b00000000,
-    0b00000000,
-    0b00000000
-}; //heart shape character
 
 void MOVE_MOTOR_ANGLE_1(int ANGLE) {
 
@@ -143,12 +133,6 @@ void loop() {
   MOVE_MOTOR_ANGLE_2(ANGLE_MOTOR_2);
   MOVE_MOTOR_ANGLE_3(ANGLE_MOTOR_3);
 
- //OLD_ANGLE_1=ANGLE_MOTOR_1;
- //OLD_ANGLE_2=ANGLE_MOTOR_2;
- //OLD_ANGLE_3=ANGLE_MOTOR_3;
-
-
-  LCD.clear();
   LCD.setCursor(0, 0);
   LCD.print("1st ");
   LCD.print(ANGLE_MOTOR_1);
