@@ -1,0 +1,123 @@
+//Interfacing 1 Encoded DcMotor With Potentiometer for Position Control Manually With angle Displaying on LCD+i2c "WITH PID"
+/***********************************************************************************/
+/*********************************Arduino MEGA 26560********************************/
+/*************************************Ver:01***************************************/
+/******************************Author:Eng.Fares Sherif*******************************/
+/************************************23-3-2024***************************************/
+/***********************************************************************************/
+
+#include <LiquidCrystal_I2C.h>
+
+#define ENCODER_A_1 2               //SHOULDER ENCODER PIN A (BASE JOINT) "INTERRUPT"
+#define ENCODER_B_1 3              //SHOULDER ENCODER PIN B (BASE JOINT)
+#define MOTOR_1_ENABLE   9        //SHOULDER MOTOR PWM (BASE JOINT)
+#define MOTOR_1_FORWARD  10      //SHOULDER MOTOR (BASE JOINT)
+#define MOTOR_1_BACKWARD 11     //SHOULDER MOTOR (BASE JOINT)
+#define POT_1 A3               //SHOULDER POSITION CONTROL (BASE JOINT)
+
+int MIN_ANGLE=0,MAX_ANGLE=360;
+volatile int POS_1=0;
+long prevT = 0;
+float eprev = 0, eintegral = 0;
+LiquidCrystal_I2C LCD(0x27,16,2);
+
+void setMotor(int dir, int pwmVal, int pwm, int in1, int in2){
+  analogWrite(pwm,pwmVal);
+  if(dir == 1){
+    digitalWrite(in1,HIGH);
+    digitalWrite(in2,LOW);
+  }
+  else if(dir == -1){
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,HIGH);
+  }
+  else{
+    digitalWrite(in1,LOW);
+    digitalWrite(in2,LOW);
+  }  
+}
+
+void READ_ENCODER_1(){
+  int B = digitalRead(ENCODER_B_1);
+  if(B > 0){
+    POS_1++;
+  }
+  else{
+    POS_1--;
+  }
+}
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(ENCODER_A_1,INPUT);
+  pinMode(ENCODER_B_1,INPUT);
+  pinMode(MOTOR_1_FORWARD, OUTPUT);
+  pinMode(MOTOR_1_BACKWARD, OUTPUT);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_A_1),READ_ENCODER_1,RISING);
+  LCD.init(); //LCD I2C DATA PIN 20 , CLK PIN 21
+  LCD.backlight();
+  LCD.clear();
+}
+
+void loop() {
+  int Target=800;
+  // PID CONSTANTS
+  float kp = 5;
+  float kd = 0.625;
+  float ki = 0.0;
+
+  // TIME DIFFERENCE
+  long currT = micros();
+  float deltaT = ((float) (currT - prevT))/( 1.0e6 );
+  prevT = currT;
+
+  // READ POSITION
+  int pos = 0; 
+  noInterrupts(); // disable interrupts temporarily while reading
+  pos = POS_1;
+  interrupts(); // turn interrupts back on
+  
+  // ERROR
+  int e = pos - Target;
+
+  // DERIVATIVE
+  float dedt = (e-eprev)/(deltaT);
+
+  // INTEGRAL
+  eintegral = eintegral + e*deltaT;
+
+  // CONTROL SIGNAL
+  float u = kp*e + kd*dedt + ki*eintegral;
+
+  // MOTOR POWER
+  float pwr = fabs(u);
+  if( pwr > 255 ){
+    pwr = 255;
+  }
+
+  // MOTOR DIRECTION
+  int dir = 1;
+  if(u<0){
+    dir = -1;
+  }
+  // MOTOR SIGNAL
+  setMotor(dir,pwr,MOTOR_1_ENABLE,MOTOR_1_FORWARD,MOTOR_1_BACKWARD);
+
+  // STORE PREVIOUS ERROR
+  eprev = e;
+
+  Serial.print(Target);
+  Serial.print(" ");
+  Serial.print(pos);
+  Serial.println();
+
+  int ANGLE_MOTOR_1=map(pos,0,1023,MIN_ANGLE,MAX_ANGLE);
+
+  LCD.setCursor(0, 0);
+  LCD.print("1st Motor Angle ");
+  LCD.setCursor(0, 1);
+  LCD.print(ANGLE_MOTOR_1);
+  LCD.print((char)223); // Degree symbol;
+  delay(100); // display refresh rate
+
+}
