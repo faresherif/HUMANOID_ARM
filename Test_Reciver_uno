@@ -1,0 +1,36 @@
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+
+// Define the CE and CSN pins for nRF24L01+ module
+const int CE_PIN = 9;
+const int CSN_PIN = 10;
+
+// PWM output pin for LED
+const int LED_PIN = 11;
+
+// Create an RF24 object
+RF24 radio(CE_PIN, CSN_PIN);
+
+// Define the address
+const byte address[6] = "00001";
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(LED_PIN, OUTPUT);
+  radio.begin();
+  radio.openReadingPipe(0, address);
+  radio.setPALevel(RF24_PA_MIN);
+  radio.startListening();
+}
+
+void loop() {
+  if (radio.available()) {
+    int MOTOR_SPEED_1;
+    radio.read(&MOTOR_SPEED_1, sizeof(MOTOR_SPEED_1));
+    analogWrite(LED_PIN, MOTOR_SPEED_1);
+
+    Serial.print("Received PWM value: ");
+    Serial.println(MOTOR_SPEED_1);
+  }
+}
