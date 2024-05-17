@@ -1,0 +1,46 @@
+#include <Wire.h>
+#include <MPU6050.h>
+#include <RF24.h>
+#include <RF24Network.h>
+#include <SPI.h>
+#define CE 6                  // NRF Chip Enale
+#define CSN 7                //NRF Chip Select Not
+MPU6050 MPU_1;
+int TILT_ANGLE_1;
+int MOTOR_SPEED_1;
+RF24 NRF(CE,CSN);
+RF24Network COMM(NRF);
+const byte NODE = 01;
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+  MPU_1.initialize();
+SPI.begin();
+NRF.begin();
+COMM.begin(50,NODE);
+
+}
+
+void loop() {
+  int16_t ax,ay,az,gx,gy,gz;
+  MPU_1.getAcceleration(&ax, &ay, &az);
+  MPU_1.getRotation(&gx, &gy, &gz);
+  TILT_ANGLE_1 = atan2(-ay, az) * 180 / M_PI; // Encoder angle
+  MOTOR_SPEED_1 = map(TILT_ANGLE_1, -90, 90, -125, 125);
+  
+    COMM.update();
+RF24NetworkHeader BOLBOL(NODE);
+
+    bool speed=COMM.write(BOLBOL,&MOTOR_SPEED_1,sizeof(MOTOR_SPEED_1)); 
+   // COMM.read(&motorSpeed_2,sizeof(motorSpeed_2)); 
+    bool angle=COMM.write(BOLBOL,&TILT_ANGLE_1,sizeof(TILT_ANGLE_1));   
+    //COMM.read(&tiltAngle_2,sizeof(tiltAngle_2));   
+  
+  Serial.print("Tilt Angle: ");
+  Serial.print(TILT_ANGLE_1);
+  Serial.print(" MMOTOR_SPEED_1: ");
+  Serial.println(MOTOR_SPEED_1);
+
+  delay(100);
+}
