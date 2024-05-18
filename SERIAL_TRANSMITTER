@@ -1,0 +1,12 @@
+void setup() {
+  Serial.begin(9600); // Start serial communication with the PC
+  Serial.println("Starting communication with Mega...");
+  //Serial1.begin(9600); // Start serial communication with Mega
+}
+
+void loop() {
+  const char message[] = "WIGGLE WIGGLE";
+  Serial.println(message); // Send message to Mega
+  Serial.println("Message sent to Mega: Hello from Uno");
+  delay(1000); // Wait for 1 second
+}
