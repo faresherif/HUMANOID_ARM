@@ -1,0 +1,13 @@
+void setup() {
+  Serial.begin(9600);  // Start serial communication with the PC
+  //Serial1.begin(9600); // Start serial communication with Uno
+  Serial.println("Waiting for messages from Uno...");
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    String receivedMessage = Serial.readStringUntil('\n'); // Read the incoming message
+    Serial.print("Received from Uno: ");
+    Serial.println(receivedMessage);
+  }
+}
